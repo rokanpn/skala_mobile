@@ -1,0 +1,68 @@
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    // پێویستە ئەم پڵەگینە هەبێت بۆ ئەوەی فلاتەر بتوانێت وەشانی ئەپەکە بناسێتەوە
+    id "dev.flutter.flutter-gradle-plugin"
+}
+
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader("UTF-8") { reader ->
+        localProperties.load(reader)
+    }
+}
+
+// وەرگرتنی وەشانی ئەپەکە لە فایلی local.properties (کە لە pubspec.yaml وەردەگیرێت)
+def flutterVersionCode = localProperties.getProperty("flutter.versionCode")
+if (flutterVersionCode == null) {
+    flutterVersionCode = "1"
+}
+
+def flutterVersionName = localProperties.getProperty("flutter.versionName")
+if (flutterVersionName == null) {
+    flutterVersionName = "1.0"
+}
+
+android {
+    // ناوی پاکێجەکەت (Namespace)
+    namespace = "com.example.skala_mobile"
+    compileSdk = flutter.compileSdkVersion
+    ndkVersion = flutter.ndkVersion
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+
+    defaultConfig {
+        // ئایدی ئەپڵیکەیشنەکە (پێویستە ناوی پڕۆژەکەت بێت)
+        applicationId = "com.example.skala_mobile"
+        
+        // وەشانی کەمترین و وەشانی ئامانج لە فلاتەرەوە وەردەگیرێن
+        minSdk = flutter.minSdkVersion
+        targetSdk = flutter.targetSdkVersion
+        versionCode = flutterVersionCode.toInteger()
+        versionName = flutterVersionName
+    }
+
+    buildTypes {
+        release {
+            // بۆ بڵاوکردنەوە لە پلی ستۆر، پێویستە لێرە SigningConfig دابنێیت
+            signingConfig = signingConfigs.debug
+            
+            // چالاککردنی کەمکردنەوەی قەبارەی ئەپ (پێشنیارکراو)
+            minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+flutter {
+    source = "../.."
+}
