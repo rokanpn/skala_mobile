@@ -1,7 +1,4 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import '../services/complaint_service.dart';
 
 class NewComplaintScreen extends StatefulWidget {
   const NewComplaintScreen({super.key});
@@ -11,66 +8,29 @@ class NewComplaintScreen extends StatefulWidget {
 }
 
 class _NewComplaintScreenState extends State<NewComplaintScreen> {
-  final titleController = TextEditingController();
-  final descController = TextEditingController();
-  String selectedCategory = "ڕێگا";
+  final _formKey = GlobalKey<FormState>();
+  final _titleController = TextEditingController();
+  final _descriptionController = TextEditingController();
   bool isLoading = false;
 
-  // گۆڕدراوی وێنەکە
-  File? _selectedImage;
+  Future<void> _submitComplaint() async {
+    if (!_formKey.currentState!.validate()) return;
 
-  final List<String> categories = [
-    "ڕێگا",
-    "ئاو",
-    "کارەبا",
-    "پاکیژەکردن",
-    "پارکەکان",
-    "تر"
-  ];
-
-  // فەنکشنی هەڵبژاردنی وێنە
-  Future<void> _pickImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      if (mounted) {
-        setState(() => _selectedImage = File(pickedFile.path));
-      }
-    }
-  }
-
-  Future<void> submit() async {
-    if (titleController.text.isEmpty || descController.text.isEmpty) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("تکایە هەموو خانەکان پڕ بکەرەوە")),
-        );
-      }
-      return;
-    }
     setState(() => isLoading = true);
 
-    // وێنەکە دەنێرین بۆ سێرڤیسەکە
-    final ok = await ComplaintService.create(
-      title: titleController.text.trim(),
-      description: descController.text.trim(),
-      category: selectedCategory,
-      mediaFile: _selectedImage,
-    );
+    // TODO: Connect to your API
+    await Future.delayed(const Duration(seconds: 1));
+
+    setState(() => isLoading = false);
 
     if (mounted) {
-      setState(() => isLoading = false);
-
-      if (ok) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("سکاڵاکە بە سەرکەوتوویی ناردرا")),
-        );
-        Navigator.pop(context);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("هەڵەیەک ڕوویدا لە کاتی ناردن")),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('سکاڵاکەت بە سەرکەوتوویی نێردرا'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      Navigator.pop(context);
     }
   }
 
@@ -78,111 +38,77 @@ class _NewComplaintScreenState extends State<NewComplaintScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("تۆمارکردنی سکاڵا"),
-        backgroundColor: Colors.amber,
-        foregroundColor: Colors.black,
+        title: const Text('سکاڵای نوێ'),
+        centerTitle: true,
+        backgroundColor: Colors.blue,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text("ناونیشانی کورت",
-                style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            TextField(
-              controller: titleController,
-              decoration: InputDecoration(
-                hintText: "بۆ نموونە: شکانی بۆری ئاو",
-                border:
-                    OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              TextFormField(
+                controller: _titleController,
+                decoration: const InputDecoration(
+                  labelText: 'ناونیشان',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.title),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'تکایە ناونیشان بنووسە';
+                  }
+                  return null;
+                },
               ),
-            ),
-            const SizedBox(height: 16),
-            const Text("جۆری سکاڵا",
-                style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey),
-                borderRadius: BorderRadius.circular(12),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _descriptionController,
+                decoration: const InputDecoration(
+                  labelText: 'وەسف',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.description),
+                ),
+                maxLines: 5,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'تکایە وەسف بنووسە';
+                  }
+                  return null;
+                },
               ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  value: selectedCategory,
-                  isExpanded: true,
-                  items: categories
-                      .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-                      .toList(),
-                  onChanged: (val) {
-                    if (val != null && mounted) {
-                      setState(() => selectedCategory = val);
-                    }
-                  },
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: isLoading ? null : _submitComplaint,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: isLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text(
+                          'ناردنی سکاڵا',
+                          style: TextStyle(fontSize: 16),
+                        ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            const Text("وردەکاری",
-                style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            TextField(
-              controller: descController,
-              maxLines: 5,
-              decoration: InputDecoration(
-                hintText: "کێشەکە بە وردی ڕوون بکەرەوە...",
-                border:
-                    OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // وێنەکە پیشان دەدەین ئەگەر هەڵبژێردرابوو
-            if (_selectedImage != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.file(_selectedImage!,
-                      height: 200, width: double.infinity, fit: BoxFit.cover),
-                ),
-              ),
-
-            // دوگمەی هەڵبژاردنی وێنە
-            TextButton.icon(
-              onPressed: _pickImage,
-              icon: const Icon(Icons.add_a_photo, color: Colors.amber),
-              label: const Text("زیادکردنی وێنە",
-                  style: TextStyle(color: Colors.black)),
-            ),
-
-            const SizedBox(height: 28),
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: ElevatedButton.icon(
-                onPressed: isLoading ? null : submit,
-                icon: isLoading
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                            color: Colors.white, strokeWidth: 2))
-                    : const Icon(Icons.send_rounded),
-                label:
-                    const Text("ناردنی سکاڵا", style: TextStyle(fontSize: 16)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.amber,
-                  foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
   }
 }

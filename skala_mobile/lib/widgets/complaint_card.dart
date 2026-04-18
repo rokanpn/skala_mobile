@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 class ComplaintCard extends StatelessWidget {
   final String userName;
@@ -9,6 +8,8 @@ class ComplaintCard extends StatelessWidget {
   final String? mediaUrl;
   final int supportCount;
   final VoidCallback onSupport;
+  final VoidCallback? onComment;
+  final VoidCallback? onShare;
 
   const ComplaintCard({
     super.key,
@@ -19,81 +20,133 @@ class ComplaintCard extends StatelessWidget {
     this.mediaUrl,
     required this.supportCount,
     required this.onSupport,
+    this.onComment,
+    this.onShare,
   });
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 0),
-      elevation: 0,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ListTile(
-            leading: CircleAvatar(
-                backgroundImage: CachedNetworkImageProvider(userImage)),
-            title: Text(userName,
-                style: const TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Text(timeAgo, style: const TextStyle(fontSize: 12)),
-            trailing: const Icon(Icons.more_horiz),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            child: Text(content,
-                style: const TextStyle(fontSize: 15, height: 1.3)),
-          ),
-          if (mediaUrl != null)
-            CachedNetworkImage(
-              imageUrl: mediaUrl!,
-              width: double.infinity,
-              fit: BoxFit.cover,
-              placeholder: (context, url) =>
-                  Container(height: 250, color: Colors.grey[300]),
-              errorWidget: (context, url, error) => const SizedBox(),
-            ),
-          const Divider(),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Row(
               children: [
-                _btn(Icons.thumb_up_alt_outlined, "پشتگیری ($supportCount)",
-                    onSupport),
-                _btn(Icons.comment_outlined, "کۆمێنت", () {
-                  // لێرە لاپەڕەی کۆمێنتەکان بکەرەوە
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    builder: (context) => Container(
-                      height: 300,
-                      child: Center(
-                        child: Text("کۆمێنتەکان - پەرەپێدەدرێت"),
+                CircleAvatar(
+                  backgroundImage: NetworkImage(userImage),
+                  radius: 20,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        userName,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
                       ),
-                    ),
-                  );
-                }),
-                _btn(Icons.share_outlined, "ناردن", () {}),
+                      Text(
+                        timeAgo,
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
-          ),
-        ],
-      ),
-    );
-  }
 
-  Widget _btn(IconData icon, String label, VoidCallback onTap) {
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Row(
-          children: [
-            Icon(icon, size: 20, color: Colors.grey[700]),
-            const SizedBox(width: 5),
-            Text(label,
-                style: TextStyle(
-                    color: Colors.grey[700], fontWeight: FontWeight.w500)),
+            // ✅ ڕیزی 68 - Container گۆڕدرا بە SizedBox
+            const SizedBox(height: 10),
+
+            // Content
+            Text(
+              content,
+              style: const TextStyle(fontSize: 14),
+              maxLines: 5,
+              overflow: TextOverflow.ellipsis,
+            ),
+
+            // Media if exists
+            if (mediaUrl != null && mediaUrl!.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(
+                  mediaUrl!,
+                  height: 200,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      height: 200,
+                      color: Colors.grey[300],
+                      child: const Center(
+                        child: Icon(Icons.broken_image, size: 50),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+
+            const SizedBox(height: 10),
+
+            // Actions
+            Row(
+              children: [
+                // Support Button
+                Expanded(
+                  child: TextButton.icon(
+                    onPressed: onSupport,
+                    // ✅ ڕیزی 70 - const زیاد کرا
+                    icon: const Icon(Icons.thumb_up_outlined, size: 20),
+                    // ✅ ڕیزی 71 - const زیاد کرا
+                    label: Text('$supportCount'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.blue,
+                    ),
+                  ),
+                ),
+
+                // Comment Button
+                if (onComment != null)
+                  Expanded(
+                    child: TextButton.icon(
+                      onPressed: onComment,
+                      icon: const Icon(Icons.comment_outlined, size: 20),
+                      label: const Text('کۆمێنت'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.grey,
+                      ),
+                    ),
+                  ),
+
+                // Share Button
+                if (onShare != null)
+                  Expanded(
+                    child: TextButton.icon(
+                      onPressed: onShare,
+                      icon: const Icon(Icons.share_outlined, size: 20),
+                      label: const Text('هاوبەشکردن'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.grey,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ],
         ),
       ),

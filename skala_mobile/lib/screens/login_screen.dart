@@ -4,7 +4,7 @@ import 'home_screen.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key}); // <-- const constructor زیاد کرا
+  const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -16,14 +16,31 @@ class _LoginScreenState extends State<LoginScreen> {
   bool isLoading = false;
 
   Future<void> login() async {
+    // Validation
+    if (emailController.text.trim().isEmpty ||
+        passwordController.text.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("تکایە ئیمەیڵ و تێپەڕەوشە پڕ بکەرەوە"),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+      return;
+    }
+
     setState(() => isLoading = true);
+
     final result = await AuthService.login(
       emailController.text.trim(),
       passwordController.text,
     );
+
     setState(() => isLoading = false);
 
-    if (result != null) {
+    // ✅ ڕاستکراوە - پشکنینی result وەک Map
+    if (result != null && result['success'] == true) {
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -40,6 +57,13 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
     }
+  }
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
   }
 
   @override
@@ -66,22 +90,27 @@ class _LoginScreenState extends State<LoginScreen> {
               TextField(
                 controller: emailController,
                 keyboardType: TextInputType.emailAddress,
+                textInputAction: TextInputAction.next,
                 decoration: InputDecoration(
                   labelText: "ئیمەیڵ",
                   prefixIcon: const Icon(Icons.email_outlined),
                   border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
               TextField(
                 controller: passwordController,
                 obscureText: true,
+                textInputAction: TextInputAction.done,
+                onSubmitted: (_) => login(),
                 decoration: InputDecoration(
                   labelText: "وشەی نهێنی",
                   prefixIcon: const Icon(Icons.lock_outline),
                   border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
               const SizedBox(height: 24),
@@ -93,7 +122,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.amber,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                   child: isLoading
                       ? const CircularProgressIndicator(color: Colors.white)

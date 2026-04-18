@@ -45,8 +45,9 @@ class _HomeScreenState extends State<HomeScreen> {
       body: IndexedStack(
         index: _currentIndex,
         children: const [
+          // ✅ ئەمە ڕاستکراوە
           FeedPage(),
-          NewComplaintPage(),
+          NewComplaintScreen(),
           MapPage(),
           ProfilePage(),
         ],
@@ -109,7 +110,6 @@ class _FeedPageState extends State<FeedPage> {
       if (mounted) {
         setState(() => isLoading = false);
       }
-      // debugPrint بەکاربهێنە لە جیاتی print
       debugPrint("Error loading data: $e");
     }
   }
@@ -174,7 +174,7 @@ class _FeedPageState extends State<FeedPage> {
                       return ComplaintCard(
                         userName: c.userName,
                         userImage: c.userImage ??
-                            "https://ui-avatars.com/api/?name=${c.userName}",
+                            "https://ui-avatars.com/api/?name=${Uri.encodeComponent(c.userName)}",
                         timeAgo: c.createdAt.length >= 10
                             ? c.createdAt.substring(0, 10)
                             : c.createdAt,
@@ -194,12 +194,6 @@ class _FeedPageState extends State<FeedPage> {
 }
 
 // ---- لاپەڕەکانی تر ----
-class NewComplaintPage extends StatelessWidget {
-  const NewComplaintPage({super.key});
-  @override
-  Widget build(BuildContext context) => const NewComplaintScreen();
-}
-
 class MapPage extends StatelessWidget {
   const MapPage({super.key});
   @override
@@ -231,6 +225,16 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  Future<void> _logout() async {
+    await AuthService.logout();
+    if (mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -238,37 +242,39 @@ class _ProfilePageState extends State<ProfilePage> {
       body: Column(
         children: [
           const SizedBox(height: 20),
-          const CircleAvatar(radius: 50, child: Icon(Icons.person, size: 50)),
+          const CircleAvatar(
+            radius: 50,
+            child: Icon(Icons.person, size: 50),
+          ),
           const SizedBox(height: 10),
-          Text(name,
-              style:
-                  const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          Text(
+            name,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
           Text(email),
           const SizedBox(height: 20),
           ListTile(
             leading: const Icon(Icons.list_alt, color: Colors.blue),
             title: const Text("سکاڵاکانم"),
-            onTap: () => Navigator.push(context,
-                MaterialPageRoute(builder: (_) => const MyComplaintsScreen())),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const MyComplaintsScreen()),
+            ),
           ),
           const Spacer(),
           Padding(
             padding: const EdgeInsets.all(20),
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red, foregroundColor: Colors.white),
-              onPressed: () async {
-                await AuthService.logout();
-                if (mounted) {
-                  Navigator.pushReplacement(context,
-                      MaterialPageRoute(builder: (_) => const LoginScreen()));
-                }
-              },
-              child: const SizedBox(
-                  width: double.infinity,
-                  child: Center(child: Text("دەرچوون"))),
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                minimumSize: const Size(double.infinity, 50),
+              ),
+              onPressed: _logout,
+              child: const Center(child: Text("دەرچوون")),
             ),
           ),
+          const SizedBox(height: 20),
         ],
       ),
     );
