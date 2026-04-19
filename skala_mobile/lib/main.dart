@@ -91,3 +91,17 @@ class SkalaApp extends StatelessWidget {
     );
   }
 }
+
+
+// lib/main.dart — زیاد بکە
+await Firebase.initializeApp();
+FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+  // نیشاندانی notification لە ئەپ
+  showDialog(
+    context: context,
+    builder: (_) => AlertDialog(
+      title: Text(message.notification?.title ?? ''),
+      content: Text(message.notification?.body ?? ''),
+    ),
+  );
+});

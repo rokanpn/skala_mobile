@@ -1,0 +1,7 @@
+// lib/l10n/app_ku.arb
+{
+  "feedTitle": "فیدی سکاڵاکان",
+  "noComplaints": "هیچ سکاڵایەک نییە",
+  "submitComplaint": "ناردنی سکاڵای نوێ",
+  "coins": "{count} کۆین"
+}
