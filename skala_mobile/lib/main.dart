@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'features/feed/screens/feed_screen.dart';
@@ -8,6 +10,9 @@ import 'features/feed/screens/feed_screen.dart';
 void main() async {
   // دڵنیابوونەوە لەوەی هەموو نیشتیمانەکانی فلاتەر ئامادەن پێش کارپێکردنی SharedPreferences
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 🔥 Firebase دەستپێکردن
+  await Firebase.initializeApp();
 
   // چاوەڕێی بارکردنی تۆکەن بکە
   final prefs = await SharedPreferences.getInstance();
@@ -26,6 +31,9 @@ class SkalaApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 🔥 Firebase Messaging Setup - لە ناو build دا
+    _setupFirebaseMessaging(context);
+
     return MaterialApp(
       title: 'سکاڵا - Skala',
       debugShowCheckedModeBanner: false,
@@ -90,18 +98,19 @@ class SkalaApp extends StatelessWidget {
       },
     );
   }
+
+  // 🔥 فانکشنی جیاواز بۆ Firebase Messaging (لە ناو کلاسدا)
+  void _setupFirebaseMessaging(BuildContext context) {
+    // گوێگرتن لە پەیامەکانی Firebase Messaging
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      // نیشاندانی notification لە ئەپ
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: Text(message.notification?.title ?? ''),
+          content: Text(message.notification?.body ?? ''),
+        ),
+      );
+    });
+  }
 }
-
-
-// lib/main.dart — زیاد بکە
-await Firebase.initializeApp();
-FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-  // نیشاندانی notification لە ئەپ
-  showDialog(
-    context: context,
-    builder: (_) => AlertDialog(
-      title: Text(message.notification?.title ?? ''),
-      content: Text(message.notification?.body ?? ''),
-    ),
-  );
-});

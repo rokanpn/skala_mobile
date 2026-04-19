@@ -45,7 +45,6 @@ class _HomeScreenState extends State<HomeScreen> {
       body: IndexedStack(
         index: _currentIndex,
         children: const [
-          // ✅ ئەمە ڕاستکراوە
           FeedPage(),
           NewComplaintScreen(),
           MapPage(),
