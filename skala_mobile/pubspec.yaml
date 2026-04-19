@@ -58,3 +58,7 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
+
+    dependencies:
+  flutter_map: ^6.1.0
+  latlong2: ^0.9.0

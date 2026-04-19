@@ -23,6 +23,14 @@ class _HomeScreenState extends State<HomeScreen> {
   String userName = "";
   String userRole = "";
 
+  // لیستی شاشەکان بە IndexedStack بۆ پاراستنی دۆخ
+  final List<Widget> _screens = [
+    const FeedPage(),
+    const NewComplaintScreen(),
+    const MapPage(),
+    const ProfilePage(),
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -44,28 +52,35 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
-        children: const [
-          FeedPage(),
-          NewComplaintScreen(),
-          MapPage(),
-          ProfilePage(),
-        ],
+        children: _screens,
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        onTap: (i) => setState(() => _currentIndex = i),
-        selectedItemColor: Colors.blue[800],
-        unselectedItemColor: Colors.grey,
+        onTap: (index) => setState(() => _currentIndex = index),
         type: BottomNavigationBarType.fixed,
+        selectedItemColor: const Color(0xFF1976D2),
+        unselectedItemColor: Colors.grey,
         items: const [
           BottomNavigationBarItem(
-              icon: Icon(Icons.home_outlined), label: "سەرەکی"),
+            icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(Icons.home),
+            label: 'فید',
+          ),
           BottomNavigationBarItem(
-              icon: Icon(Icons.add_circle_outline), label: "سکاڵا"),
+            icon: Icon(Icons.add_circle_outline),
+            activeIcon: Icon(Icons.add_circle),
+            label: 'سکاڵا',
+          ),
           BottomNavigationBarItem(
-              icon: Icon(Icons.map_outlined), label: "نەخشە"),
+            icon: Icon(Icons.map_outlined),
+            activeIcon: Icon(Icons.map),
+            label: 'نەخشە',
+          ),
           BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline), label: "پرۆفایل"),
+            icon: Icon(Icons.person_outline),
+            activeIcon: Icon(Icons.person),
+            label: 'پرۆفایل',
+          ),
         ],
       ),
     );
@@ -119,7 +134,8 @@ class _FeedPageState extends State<FeedPage> {
       backgroundColor: Colors.grey[200],
       appBar: AppBar(
         title: const Text("سکاڵاکان",
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue)),
+            style: TextStyle(
+                fontWeight: FontWeight.bold, color: Color(0xFF1976D2))),
         backgroundColor: Colors.white,
         elevation: 0.5,
         actions: [
@@ -192,13 +208,14 @@ class _FeedPageState extends State<FeedPage> {
   }
 }
 
-// ---- لاپەڕەکانی تر ----
+// ---- لاپەڕەی نەخشە (Map Page) ----
 class MapPage extends StatelessWidget {
   const MapPage({super.key});
   @override
   Widget build(BuildContext context) => const MapScreen();
 }
 
+// ---- لاپەڕەی پرۆفایل (Profile Page) ----
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
   @override
@@ -237,7 +254,11 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("پرۆفایل")),
+      appBar: AppBar(
+        title: const Text("پرۆفایل"),
+        backgroundColor: Colors.white,
+        elevation: 0.5,
+      ),
       body: Column(
         children: [
           const SizedBox(height: 20),
@@ -253,7 +274,7 @@ class _ProfilePageState extends State<ProfilePage> {
           Text(email),
           const SizedBox(height: 20),
           ListTile(
-            leading: const Icon(Icons.list_alt, color: Colors.blue),
+            leading: const Icon(Icons.list_alt, color: Color(0xFF1976D2)),
             title: const Text("سکاڵاکانم"),
             onTap: () => Navigator.push(
               context,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../core/storage/secure_storage.dart';
 import 'login_screen.dart';
 import 'home_screen.dart';
 
@@ -14,56 +15,104 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _check();
+    _checkLogin();
   }
 
-  Future<void> _check() async {
-    // ✅ const زیاد کرا بۆ Duration
+  Future<void> _checkLogin() async {
+    // چاوەڕوانی ٢ چرکە بۆ نمایشکردنی splash screen
     await Future.delayed(const Duration(seconds: 2));
 
-    final prefs = await SharedPreferences.getInstance();
+    // پشکنینی تۆکێن لە هەردوو شوێن (بۆ پشتگیری کۆدە کۆن و نوێکان)
+    String? token;
 
-    // ✅ mounted پشکنین
+    // یەکەم: لە SecureStorage بگەڕێ (ئاسایشتر)
+    try {
+      token = await SecureStorage.getAccessToken();
+    } catch (e) {
+      debugPrint("Error reading from SecureStorage: $e");
+    }
+
+    // ئەگەر تۆکێن نەدۆزرایەوە، لە SharedPreferences بگەڕێ (بۆ پشتگیری کۆن)
+    if (token == null || token.isEmpty) {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        token = prefs.getString("token");
+      } catch (e) {
+        debugPrint("Error reading from SharedPreferences: $e");
+      }
+    }
+
+    // پشکنینی mounted پێش گواستنەوە
     if (!mounted) return;
 
-    final token = prefs.getString("token");
-
-    // ✅ const زیاد کرا بۆ MaterialPageRoute و widgetەکان
+    // گواستنەوە بۆ لاپەڕەی گونجاو
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
         builder: (_) => (token != null && token.isNotEmpty)
-            ? const HomeScreen() // ✅ const زیاد کرا
-            : const LoginScreen(), // ✅ const زیاد کرا
+            ? const HomeScreen()
+            : const LoginScreen(),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      // ✅ const زیاد کرا
-      backgroundColor: Colors.amber,
+    return Scaffold(
+      backgroundColor: const Color(0xFF1976D2), // ڕەنگی شینی جوان
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.campaign_rounded, size: 90, color: Colors.white),
-            SizedBox(height: 16), // ✅ const لەسەرەوە هەیە
-            Text(
-              "سکاڵا",
-              style: TextStyle(
-                fontSize: 42,
-                fontWeight: FontWeight.bold,
+            // ئایکۆنی شێوەدار (وەک کۆدی دووەم)
+            Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
                 color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.location_city,
+                color: Color(0xFF1976D2),
+                size: 60,
               ),
             ),
-            Text(
-              "Smart City Platform",
-              style: TextStyle(color: Colors.white70, fontSize: 16),
+            const SizedBox(height: 24),
+
+            // ناوی ئەپڵیکەیشن
+            const Text(
+              'سکاڵا',
+              style: TextStyle(
+                fontSize: 36,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-            SizedBox(height: 48), // ✅ const لەسەرەوە هەیە
-            CircularProgressIndicator(color: Colors.white),
+            const SizedBox(height: 8),
+
+            // وەسف
+            const Text(
+              'Smart City Platform',
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 48),
+
+            // loading indicator
+            const CircularProgressIndicator(
+              color: Colors.white,
+              strokeWidth: 3,
+            ),
           ],
         ),
       ),
