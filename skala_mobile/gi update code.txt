@@ -1,0 +1,6 @@
+cd C:\Users\KCC\skala_mobile
+git remote -v
+git remote add origin https://github.com/rokanpn/skala_mobile.git
+git add .
+git commit -m "ئەپدەیت: گۆڕانکاری نوێیەکانم زیادکرد"
+git push origin main --force

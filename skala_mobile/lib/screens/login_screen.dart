@@ -211,7 +211,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   controller: passwordController,
                   obscureText: _obscurePassword,
                   textInputAction: TextInputAction.done,
-                  onSubmitted: (_) => login(),
+                  onFieldSubmitted: (_) => login(),
                   style: const TextStyle(fontSize: 16),
                   textAlign: TextAlign.left,
                   decoration: _inputDecoration(
