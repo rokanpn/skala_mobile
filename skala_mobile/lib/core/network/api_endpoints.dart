@@ -2,7 +2,7 @@ class ApiEndpoints {
   // ⚠️ ئەمە بگۆڕە بۆ IPی کۆمپیوتەرەکەت
   // ئەگەر Android Emulator: 10.0.2.2
   // ئەگەر مۆبایلی ڕاستەقینە: IPی WiFi کۆمپیوتەرەکەت (مسالا: 192.168.1.5)
-  static const String baseUrl = 'http://10.0.2.2:8080/api/v1';
+  static const String baseUrl = 'http://192.168.43.140:8080/api/v1';
 
   // Auth
   static const String login = '/auth/login';

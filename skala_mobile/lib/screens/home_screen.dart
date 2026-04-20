@@ -10,6 +10,7 @@ import 'map_screen.dart';
 import 'notification_screen.dart';
 import '../services/notification_service.dart';
 import 'my_complaints_screen.dart';
+import 'profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,31 +21,19 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
-  String userName = "";
-  String userRole = "";
 
   // لیستی شاشەکان بە IndexedStack بۆ پاراستنی دۆخ
-  final List<Widget> _screens = [
-    const FeedPage(),
-    const NewComplaintScreen(),
-    const MapPage(),
-    const ProfilePage(),
-  ];
+  late final List<Widget> _screens;
 
   @override
   void initState() {
     super.initState();
-    _loadUser();
-  }
-
-  Future<void> _loadUser() async {
-    final prefs = await SharedPreferences.getInstance();
-    if (mounted) {
-      setState(() {
-        userName = prefs.getString("name") ?? "بەکارهێنەر";
-        userRole = prefs.getString("role") ?? "CITIZEN";
-      });
-    }
+    _screens = const [
+      FeedPage(),
+      NewComplaintScreen(),
+      MapScreen(),
+      ProfilePage(),
+    ];
   }
 
   @override
@@ -54,31 +43,28 @@ class _HomeScreenState extends State<HomeScreen> {
         index: _currentIndex,
         children: _screens,
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) => setState(() => _currentIndex = index),
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: const Color(0xFF1976D2),
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _currentIndex,
+        onDestinationSelected: (index) => setState(() => _currentIndex = index),
+        destinations: const [
+          NavigationDestination(
             icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
+            selectedIcon: Icon(Icons.home),
             label: 'فید',
           ),
-          BottomNavigationBarItem(
+          NavigationDestination(
             icon: Icon(Icons.add_circle_outline),
-            activeIcon: Icon(Icons.add_circle),
+            selectedIcon: Icon(Icons.add_circle),
             label: 'سکاڵا',
           ),
-          BottomNavigationBarItem(
+          NavigationDestination(
             icon: Icon(Icons.map_outlined),
-            activeIcon: Icon(Icons.map),
+            selectedIcon: Icon(Icons.map),
             label: 'نەخشە',
           ),
-          BottomNavigationBarItem(
+          NavigationDestination(
             icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
+            selectedIcon: Icon(Icons.person),
             label: 'پرۆفایل',
           ),
         ],
@@ -133,15 +119,20 @@ class _FeedPageState extends State<FeedPage> {
     return Scaffold(
       backgroundColor: Colors.grey[200],
       appBar: AppBar(
-        title: const Text("سکاڵاکان",
-            style: TextStyle(
-                fontWeight: FontWeight.bold, color: Color(0xFF1976D2))),
+        title: const Text(
+          "سکاڵاکان",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF1976D2),
+          ),
+        ),
         backgroundColor: Colors.white,
         elevation: 0.5,
         actions: [
           IconButton(
-              icon: const Icon(Icons.refresh, color: Colors.black),
-              onPressed: _loadData),
+            icon: const Icon(Icons.refresh, color: Colors.black),
+            onPressed: _loadData,
+          ),
           Stack(
             alignment: Alignment.center,
             children: [
@@ -150,9 +141,10 @@ class _FeedPageState extends State<FeedPage> {
                     color: Colors.black),
                 onPressed: () async {
                   await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => const NotificationScreen()));
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const NotificationScreen()),
+                  );
                   _loadData();
                 },
               ),
@@ -163,13 +155,16 @@ class _FeedPageState extends State<FeedPage> {
                   child: Container(
                     padding: const EdgeInsets.all(2),
                     decoration: const BoxDecoration(
-                        color: Colors.red, shape: BoxShape.circle),
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
                     constraints:
                         const BoxConstraints(minWidth: 16, minHeight: 16),
-                    child: Text('$_unreadCount',
-                        style:
-                            const TextStyle(color: Colors.white, fontSize: 10),
-                        textAlign: TextAlign.center),
+                    child: Text(
+                      '$_unreadCount',
+                      style: const TextStyle(color: Colors.white, fontSize: 10),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                 ),
             ],
@@ -208,34 +203,29 @@ class _FeedPageState extends State<FeedPage> {
   }
 }
 
-// ---- لاپەڕەی نەخشە (Map Page) ----
-class MapPage extends StatelessWidget {
-  const MapPage({super.key});
-  @override
-  Widget build(BuildContext context) => const MapScreen();
-}
-
 // ---- لاپەڕەی پرۆفایل (Profile Page) ----
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
   @override
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  String name = "", email = "";
+  String name = "";
+  String email = "";
 
   @override
   void initState() {
     super.initState();
-    _load();
+    _loadUserData();
   }
 
-  Future<void> _load() async {
+  Future<void> _loadUserData() async {
     final prefs = await SharedPreferences.getInstance();
     if (mounted) {
       setState(() {
-        name = prefs.getString("name") ?? "";
+        name = prefs.getString("name") ?? "بەکارهێنەر";
         email = prefs.getString("email") ?? "";
       });
     }
@@ -254,31 +244,63 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
         title: const Text("پرۆفایل"),
         backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF1976D2),
         elevation: 0.5,
+        centerTitle: true,
       ),
       body: Column(
         children: [
           const SizedBox(height: 20),
-          const CircleAvatar(
-            radius: 50,
-            child: Icon(Icons.person, size: 50),
+          Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF1976D2).withOpacity(0.3),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: const CircleAvatar(
+              radius: 50,
+              backgroundColor: Color(0xFF1976D2),
+              child: Icon(Icons.person, size: 50, color: Colors.white),
+            ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           Text(
             name,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1976D2),
+            ),
           ),
-          Text(email),
-          const SizedBox(height: 20),
-          ListTile(
-            leading: const Icon(Icons.list_alt, color: Color(0xFF1976D2)),
-            title: const Text("سکاڵاکانم"),
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const MyComplaintsScreen()),
+          const SizedBox(height: 4),
+          Text(
+            email,
+            style: const TextStyle(color: Colors.grey, fontSize: 14),
+          ),
+          const SizedBox(height: 24),
+          Card(
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            elevation: 2,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: ListTile(
+              leading: const Icon(Icons.list_alt, color: Color(0xFF1976D2)),
+              title: const Text("سکاڵاکانم"),
+              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const MyComplaintsScreen()),
+              ),
             ),
           ),
           const Spacer(),
@@ -289,9 +311,15 @@ class _ProfilePageState extends State<ProfilePage> {
                 backgroundColor: Colors.red,
                 foregroundColor: Colors.white,
                 minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               onPressed: _logout,
-              child: const Center(child: Text("دەرچوون")),
+              child: const Text(
+                "دەرچوون",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
             ),
           ),
           const SizedBox(height: 20),

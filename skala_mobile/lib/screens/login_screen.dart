@@ -131,7 +131,7 @@ class _LoginScreenState extends State<LoginScreen> {
       backgroundColor: const Color(0xFFF5F7FA),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Form(
             key: _formKey,
             child: Column(
@@ -139,7 +139,7 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 const SizedBox(height: 60),
 
-                // لۆگۆ - باشترکراو
+                // لۆگۆ
                 Center(
                   child: Container(
                     width: 90,
@@ -162,14 +162,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
 
                 // ناوی ئەپڵیکەیشن
                 const Center(
                   child: Text(
                     'سکاڵا',
                     style: TextStyle(
-                      fontSize: 32,
+                      fontSize: 30,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF1976D2),
                     ),
@@ -181,19 +181,15 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: TextStyle(color: Colors.grey),
                   ),
                 ),
-                const SizedBox(height: 48),
+                const SizedBox(height: 40),
 
                 // فیلدی ئیمەیڵ
-                TextFormField(
+                _buildTextField(
                   controller: emailController,
+                  label: 'ئیمەیڵ',
+                  icon: Icons.email_outlined,
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.next,
-                  style: const TextStyle(fontSize: 16),
-                  textAlign: TextAlign.left,
-                  decoration: _inputDecoration(
-                    label: "ئیمەیڵ",
-                    icon: Icons.email_outlined,
-                  ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'ئیمەیڵەکەت بنووسە';
@@ -204,29 +200,25 @@ class _LoginScreenState extends State<LoginScreen> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 14),
 
                 // فیلدی وشەی نهێنی
-                TextFormField(
+                _buildTextField(
                   controller: passwordController,
+                  label: 'وشەی نهێنی',
+                  icon: Icons.lock_outline,
                   obscureText: _obscurePassword,
                   textInputAction: TextInputAction.done,
                   onFieldSubmitted: (_) => login(),
-                  style: const TextStyle(fontSize: 16),
-                  textAlign: TextAlign.left,
-                  decoration: _inputDecoration(
-                    label: "وشەی نهێنی",
-                    icon: Icons.lock_outline,
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                        color: Colors.grey,
-                      ),
-                      onPressed: () =>
-                          setState(() => _obscurePassword = !_obscurePassword),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscurePassword
+                          ? Icons.visibility_off
+                          : Icons.visibility,
+                      color: Colors.grey,
                     ),
+                    onPressed: () =>
+                        setState(() => _obscurePassword = !_obscurePassword),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -252,7 +244,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      elevation: 2,
                     ),
                     child: isLoading
                         ? const CircularProgressIndicator(color: Colors.white)
@@ -272,18 +263,18 @@ class _LoginScreenState extends State<LoginScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Text(
-                      "ئەکاونتت نییە؟",
+                      "ئەکاونتت نییە؟ ",
                       style: TextStyle(color: Colors.grey),
                     ),
-                    const SizedBox(width: 4),
                     GestureDetector(
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (_) => const RegisterScreen()),
+                          builder: (_) => const RegisterScreen(),
+                        ),
                       ),
                       child: const Text(
-                        "تۆمار بکە",
+                        "تۆمارکردن",
                         style: TextStyle(
                           color: Color(0xFF1976D2),
                           fontWeight: FontWeight.bold,
@@ -301,38 +292,54 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  InputDecoration _inputDecoration({
+  Widget _buildTextField({
+    required TextEditingController controller,
     required String label,
     required IconData icon,
+    TextInputType? keyboardType,
+    TextInputAction? textInputAction,
+    bool obscureText = false,
+    void Function(String)? onFieldSubmitted,
     Widget? suffixIcon,
+    String? Function(String?)? validator,
   }) {
-    return InputDecoration(
-      labelText: label,
-      labelStyle: const TextStyle(color: Colors.grey),
-      prefixIcon: Icon(icon, color: const Color(0xFF1976D2), size: 22),
-      suffixIcon: suffixIcon,
-      filled: true,
-      fillColor: Colors.white,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide.none,
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      textInputAction: textInputAction,
+      obscureText: obscureText,
+      onFieldSubmitted: onFieldSubmitted,
+      style: const TextStyle(fontSize: 16),
+      textAlign: TextAlign.left,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: Colors.grey),
+        prefixIcon: Icon(icon, color: const Color(0xFF1976D2), size: 22),
+        suffixIcon: suffixIcon,
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFE0E0E0), width: 1),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFF1976D2), width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.red, width: 1),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.red, width: 2),
+        ),
       ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFFE0E0E0), width: 1),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFF1976D2), width: 2),
-      ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Colors.red, width: 1),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Colors.red, width: 2),
-      ),
+      validator: validator,
     );
   }
 }

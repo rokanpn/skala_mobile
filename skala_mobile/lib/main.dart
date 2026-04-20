@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'screens/splash_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'features/feed/screens/feed_screen.dart';
@@ -8,8 +9,9 @@ import 'features/feed/screens/feed_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // چاوەڕێی دۆخەی login بکە بەڵام بێ پەڕەی splash
   final prefs = await SharedPreferences.getInstance();
-  final String? token = prefs.getString("token");
+  final String? token = prefs.getString('token');
   final bool isLoggedIn = token != null && token.isNotEmpty;
 
   runApp(SkalaApp(isLoggedIn: isLoggedIn));
@@ -26,7 +28,7 @@ class SkalaApp extends StatelessWidget {
       title: 'سکاڵا - Skala',
       debugShowCheckedModeBanner: false,
 
-      // 🌐 پشتگیری زمانەکان (RTL & LTR) - ڕێکخستنی تەواو
+      // 🌐 پشتگیری زمانەکان (RTL & LTR)
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
@@ -39,17 +41,19 @@ class SkalaApp extends StatelessWidget {
       ],
       locale: const Locale('ku', 'IQ'),
 
-      // 🎨 ڕووکاری پرۆگرام
+      // 🎨 ڕووکاری پرۆگرام (تێکەڵکردنی هەردوو Theme)
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.blue,
+          seedColor: const Color(0xFF1976D2),
           brightness: Brightness.light,
         ),
         useMaterial3: true,
-        fontFamily: 'Sans',
+        fontFamily: 'sans-serif',
         appBarTheme: const AppBarTheme(
-          centerTitle: true,
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black87,
           elevation: 0,
+          centerTitle: true,
         ),
         inputDecorationTheme: InputDecorationTheme(
           border: OutlineInputBorder(
@@ -60,11 +64,10 @@ class SkalaApp extends StatelessWidget {
 
       darkTheme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.blue,
+          seedColor: const Color(0xFF1976D2),
           brightness: Brightness.dark,
         ),
         useMaterial3: true,
-        fontFamily: 'Sans',
         appBarTheme: const AppBarTheme(
           centerTitle: true,
           elevation: 0,
@@ -73,9 +76,11 @@ class SkalaApp extends StatelessWidget {
 
       themeMode: ThemeMode.system,
 
-      home: isLoggedIn ? const HomeScreen() : const LoginScreen(),
+      // بەپێی دۆخەی login، پەڕەی یەکەم دیاری بکە
+      home: isLoggedIn ? const HomeScreen() : const SplashScreen(),
 
       routes: {
+        '/splash': (context) => const SplashScreen(),
         '/login': (context) => const LoginScreen(),
         '/home': (context) => const HomeScreen(),
         '/feed': (context) => const FeedScreen(),

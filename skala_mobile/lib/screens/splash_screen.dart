@@ -64,7 +64,7 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // ئایکۆنی شێوەدار (وەک کۆدی دووەم)
+            // ئایکۆنی شێوەدار
             Container(
               width: 100,
               height: 100,
@@ -98,12 +98,12 @@ class _SplashScreenState extends State<SplashScreen> {
             ),
             const SizedBox(height: 8),
 
-            // وەسف
+            // وەسف (هاوبەش لە نێوان هەردوو کۆددا)
             const Text(
               'Smart City Platform',
               style: TextStyle(
                 color: Colors.white70,
-                fontSize: 16,
+                fontSize: 15,
               ),
             ),
             const SizedBox(height: 48),

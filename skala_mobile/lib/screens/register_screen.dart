@@ -46,7 +46,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     setState(() => isLoading = true);
 
     try {
-      // هەوڵی تۆمارکردن بە AuthService (بۆ پشتگیری کۆدی کۆن)
+      // Method 1: هەوڵی تۆمارکردن بە AuthService (بۆ پشتگیری کۆدی کۆن)
       final result = await AuthService.register(
         nameController.text.trim(),
         emailController.text.trim(),
@@ -55,37 +55,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
 
       if (result != null) {
-        // هەوڵی تۆمارکردنی تۆکێن بە SecureStorage
-        try {
-          final response = await _apiClient.dio.post(
-            ApiEndpoints.register,
-            data: {
-              'name': nameController.text.trim(),
-              'email': emailController.text.trim(),
-              'phone': phoneController.text.trim(),
-              'password': passwordController.text,
-            },
-          );
-
-          if (response.statusCode == 200 || response.statusCode == 201) {
-            await SecureStorage.saveTokens(
-              accessToken: response.data['access_token'],
-              refreshToken: response.data['refresh_token'],
-            );
-            if (response.data['user'] != null) {
-              await SecureStorage.saveUserId(
-                  response.data['user']['id'].toString());
-            }
-          }
-        } catch (tokenError) {
-          // ئەگەر تۆکێن تۆمار نەکرا، کێشە نییە - بەردەوام بە
-          debugPrint("Token storage error: $tokenError");
-        }
+        // Method 2: هەوڵی تۆمارکردنی تۆکێن بە ApiClient (بۆ سیستەمی نوێ)
+        await _saveTokensWithApiClient();
 
         if (mounted) {
-          Navigator.pushReplacement(
+          // بەکارهێنانی pushAndRemoveUntil بۆ پاککردنەوەی ستەک
+          Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(builder: (_) => const HomeScreen()),
+            (route) => false,
           );
         }
       } else {
@@ -125,6 +103,35 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
+  Future<void> _saveTokensWithApiClient() async {
+    try {
+      final response = await _apiClient.dio.post(
+        ApiEndpoints.register,
+        data: {
+          'name': nameController.text.trim(),
+          'email': emailController.text.trim(),
+          'phone': phoneController.text.trim(),
+          'password': passwordController.text,
+        },
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        await SecureStorage.saveTokens(
+          accessToken: response.data['access_token'],
+          refreshToken: response.data['refresh_token'],
+        );
+        if (response.data['user'] != null) {
+          await SecureStorage.saveUserId(
+            response.data['user']['id'].toString(),
+          );
+        }
+      }
+    } catch (tokenError) {
+      // ئەگەر تۆکێن تۆمار نەکرا، کێشە نییە - بەردەوام بە
+      debugPrint("Token storage error: $tokenError");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -145,6 +152,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 20),
+
                 // لۆگۆ
                 Center(
                   child: Container(
@@ -153,12 +161,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     decoration: BoxDecoration(
                       color: const Color(0xFF1976D2),
                       borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF1976D2).withOpacity(0.3),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
                     ),
-                    child: const Icon(Icons.location_city,
-                        color: Colors.white, size: 45),
+                    child: const Icon(
+                      Icons.location_city,
+                      color: Colors.white,
+                      size: 45,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
+
+                // ناوی ئەپڵیکەیشن
                 const Center(
                   child: Text(
                     'سکاڵا',
@@ -178,11 +198,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 40),
 
                 // ناوی تەواو
-                TextFormField(
+                _buildTextField(
                   controller: nameController,
+                  label: 'ناوی تەواو',
+                  icon: Icons.person_outline,
                   textAlign: TextAlign.right,
-                  decoration:
-                      _inputDecoration('ناوی تەواو', Icons.person_outline),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'ناوەکەت بنووسە';
@@ -190,14 +210,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 14),
 
                 // ئیمەیڵ
-                TextFormField(
+                _buildTextField(
                   controller: emailController,
+                  label: 'ئیمەیڵ',
+                  icon: Icons.email_outlined,
                   keyboardType: TextInputType.emailAddress,
                   textAlign: TextAlign.left,
-                  decoration: _inputDecoration('ئیمەیڵ', Icons.email_outlined),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'ئیمەیڵەکەت بنووسە';
@@ -208,15 +229,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 14),
 
                 // ژمارەی تەلەفۆن
-                TextFormField(
+                _buildTextField(
                   controller: phoneController,
+                  label: 'ژمارەی تەلەفۆن',
+                  icon: Icons.phone_outlined,
                   keyboardType: TextInputType.phone,
                   textAlign: TextAlign.left,
-                  decoration:
-                      _inputDecoration('ژمارەی تەلەفۆن', Icons.phone_outlined),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'ژمارەی تەلەفۆنت بنووسە';
@@ -227,26 +248,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 14),
 
                 // وشەی نهێنی
-                TextFormField(
+                _buildTextField(
                   controller: passwordController,
+                  label: 'وشەی نهێنی',
+                  icon: Icons.lock_outline,
                   obscureText: _obscurePassword,
                   textAlign: TextAlign.left,
-                  decoration: _inputDecoration(
-                    'وشەی نهێنی',
-                    Icons.lock_outline,
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                        color: Colors.grey,
-                      ),
-                      onPressed: () =>
-                          setState(() => _obscurePassword = !_obscurePassword),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscurePassword
+                          ? Icons.visibility_off
+                          : Icons.visibility,
+                      color: Colors.grey,
                     ),
+                    onPressed: () =>
+                        setState(() => _obscurePassword = !_obscurePassword),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -279,13 +298,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         : const Text(
                             "دروستکردنی ئەکاونت",
                             style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.bold),
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                   ),
                 ),
                 const SizedBox(height: 16),
 
-                // چوونەژوورەوە
+                // چوونەژوورەوە (گەڕانەوە بۆ لاپەڕەی چوونەژوورەوە)
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -315,35 +336,55 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  InputDecoration _inputDecoration(String label, IconData icon,
-      {Widget? suffixIcon}) {
-    return InputDecoration(
-      labelText: label,
-      labelStyle: const TextStyle(color: Colors.grey),
-      prefixIcon: Icon(icon, color: const Color(0xFF1976D2), size: 22),
-      suffixIcon: suffixIcon,
-      filled: true,
-      fillColor: Colors.white,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide.none,
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    TextInputType? keyboardType,
+    TextInputAction? textInputAction,
+    bool obscureText = false,
+    TextAlign textAlign = TextAlign.left,
+    void Function(String)? onFieldSubmitted,
+    Widget? suffixIcon,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      textInputAction: textInputAction,
+      obscureText: obscureText,
+      onFieldSubmitted: onFieldSubmitted,
+      textAlign: textAlign,
+      style: const TextStyle(fontSize: 16),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: Colors.grey),
+        prefixIcon: Icon(icon, color: const Color(0xFF1976D2), size: 22),
+        suffixIcon: suffixIcon,
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFE0E0E0), width: 1),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFF1976D2), width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.red, width: 1),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.red, width: 2),
+        ),
       ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFFE0E0E0), width: 1),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFF1976D2), width: 2),
-      ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Colors.red, width: 1),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Colors.red, width: 2),
-      ),
+      validator: validator,
     );
   }
 }
