@@ -1,0 +1,55 @@
+? Major Update: UI Improvements and Dual API Support 
+ 
+?? Main Changes: 
+ 
+1. ?? HomeScreen & BottomNavigationBar: 
+   - Changed BottomNavigationBar to Material 3 NavigationBar 
+   - Added IndexedStack to preserve page state 
+ 
+2. ?? FeedScreen: 
+   - Added support for both ComplaintService and ApiClient 
+   - Added RefreshIndicator and empty state 
+   - UI improvements and code cleanup 
+ 
+3. ??? MapScreen: 
+   - Merged both Google Maps and Flutter Map 
+   - Added markers with dual data source support 
+   - Added BottomSheet for complaint details 
+ 
+4. ?? ProfileScreen: 
+   - Improved UI with shadows and coin card 
+   - Added role translation to Kurdish 
+   - Added complaint statistics 
+ 
+5. ?? LoginScreen & RegisterScreen: 
+   - Added support for both AuthService and ApiClient 
+   - Improved validation and error handling 
+   - Added icons and better styling 
+ 
+6. ?? ComplaintDetailScreen: 
+   - Added dual API support for comments 
+   - Improved comment UI with avatars and date 
+   - Added empty state for comments 
+ 
+7. ?? ComplaintCard: 
+   - Merged both card styles 
+   - Added multi-image support (PageView) 
+   - Added support state with appropriate color 
+ 
+?? Technical Changes: 
+- Fixed ambiguous imports (used 'as prefix') 
+- Added try-catch for both API approaches 
+- Improved error handling 
+- Added const constructors for better performance 
+ 
+?? Added Packages: 
+- All packages synchronized in pubspec.yaml 
+ 
+??? Removals: 
+- Removed unused imports 
+- Removed redundant code 
+ 
+? Support For: 
+- RTL for Kurdish language 
+- Light and dark mode (ThemeMode.system) 
+- Both legacy and new API approaches 
